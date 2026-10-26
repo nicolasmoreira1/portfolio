@@ -1,24 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { buscarRepositorios } from "../services/github";
+import { supabase } from "../services/supabase";
 
 function Home() {
   const [projetos, setProjetos] = useState([]);
+  const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    buscarRepositorios()
-      .then((dados) => {
-        setProjetos(dados);
-      })
-      .catch((erro) => {
-        setErro(erro.message);
-      })
-      .finally(() => {
+    async function carregar() {
+      try {
+        const repos = await buscarRepositorios();
+        const { data: dadosDestaques } = await supabase
+          .from("projetos_destaque")
+          .select("*");
+
+        setProjetos(repos);
+        setDestaques(dadosDestaques || []);
+      } catch (erroCapturado) {
+        setErro(erroCapturado.message);
+      } finally {
         setCarregando(false);
-      });
+      }
+    }
+
+    carregar();
   }, []);
+
+  function estaDestacado(nomeRepositorio) {
+    return destaques.some((d) => d.nome_repositorio === nomeRepositorio);
+  }
 
   if (carregando) {
     return <p>Carregando projetos...</p>;
@@ -38,7 +51,9 @@ function Home() {
       <div>
         {projetos.map((projeto) => (
           <div key={projeto.id}>
-            <h3>{projeto.name}</h3>
+            <h3>
+              {projeto.name} {estaDestacado(projeto.name) && "⭐ Destaque"}
+            </h3>
             <p>{projeto.description}</p>
             <p>Linguagem: {projeto.language}</p>
             <Link to={`/projetos/${projeto.name}`}>Ver detalhes</Link>
