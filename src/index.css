@@ -4,10 +4,14 @@
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  --accent: #8313d9;
+  --accent-bg: rgba(131, 19, 217, 0.1);
+  --accent-border: rgba(131, 19, 217, 0.5);
+  --accent-contraste: #fff;
+  --erro: #c62a2f;
+  --erro-bg: rgba(198, 42, 47, 0.1);
+  --sucesso: #1a7a44;
+  --sucesso-bg: rgba(26, 122, 68, 0.1);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
@@ -43,6 +47,15 @@
   --bg: #16171d;
   --border: #2e303a;
   --code-bg: #1f2028;
+  /* No fundo escuro o roxo precisa clarear para manter o contraste. */
+  --accent: #c98bff;
+  --accent-bg: rgba(201, 139, 255, 0.12);
+  --accent-border: rgba(201, 139, 255, 0.5);
+  --accent-contraste: #16171d;
+  --erro: #ff8085;
+  --erro-bg: rgba(255, 128, 133, 0.12);
+  --sucesso: #5fd68f;
+  --sucesso-bg: rgba(95, 214, 143, 0.12);
 }
 
 body {
@@ -290,7 +303,7 @@ code {
 }
 
 .botao--primario {
-  color: #fff;
+  color: var(--accent-contraste);
   background: var(--accent);
 }
 
@@ -345,12 +358,12 @@ code {
 
 .campo input[aria-invalid="true"],
 .campo textarea[aria-invalid="true"] {
-  border-color: #e5484d;
+  border-color: var(--erro);
 }
 
 .campo__erro {
   font-size: 14px;
-  color: #e5484d;
+  color: var(--erro);
 }
 
 /* ---------- Avisos ---------- */
@@ -363,13 +376,13 @@ code {
 }
 
 .aviso--erro {
-  color: #e5484d;
-  background: rgba(229, 72, 77, 0.1);
+  color: var(--erro);
+  background: var(--erro-bg);
 }
 
 .aviso--sucesso {
-  color: #2a9d5c;
-  background: rgba(42, 157, 92, 0.1);
+  color: var(--sucesso);
+  background: var(--sucesso-bg);
 }
 
 /* ---------- Esqueleto de carregamento ---------- */
