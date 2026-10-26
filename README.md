@@ -1,16 +1,35 @@
-# React + Vite
+# Portfólio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Site de portfólio pessoal feito em React, com projetos carregados automaticamente do GitHub.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React + Vite
+- ESLint (padronização de código)
 
-## React Compiler
+## Estrutura de pastas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/components` — componentes visuais reaproveitáveis (botões, cards), sem lógica de busca de dados
+- `src/pages` — telas completas do site (Home, página de projeto, 404)
+- `src/services` — funções que buscam dados externos (ex.: API do GitHub)
+- `src/hooks` — hooks personalizados do React (funções reaproveitáveis que começam com `use`)
 
-## Expanding the ESLint configuration
+## Convenções de nomenclatura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Componentes em PascalCase (ex.: `ProjectCard.jsx`)
+- Hooks começando com `use` (ex.: `useTheme.js`)
+
+## Padrão de commits
+
+Seguimos o padrão Conventional Commits:
+- `feat:` nova funcionalidade
+- `fix:` correção de bug
+- `chore:` tarefas de configuração/manutenção
+- `docs:` mudanças em documentação
+
+## Como rodar o projeto
+
+\`\`\`
+npm install
+npm run dev
+\`\`\`
