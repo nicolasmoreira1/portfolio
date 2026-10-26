@@ -4,12 +4,33 @@ import { buscarRepositorios } from "../services/github";
 
 function Home() {
   const [projetos, setProjetos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    buscarRepositorios().then((dados) => {
-      setProjetos(dados);
-    });
+    buscarRepositorios()
+      .then((dados) => {
+        setProjetos(dados);
+      })
+      .catch((erro) => {
+        setErro(erro.message);
+      })
+      .finally(() => {
+        setCarregando(false);
+      });
   }, []);
+
+  if (carregando) {
+    return <p>Carregando projetos...</p>;
+  }
+
+  if (erro) {
+    return <p>Não foi possível carregar os projetos. Tente novamente mais tarde.</p>;
+  }
+
+  if (projetos.length === 0) {
+    return <p>Nenhum projeto encontrado.</p>;
+  }
 
   return (
     <div>
