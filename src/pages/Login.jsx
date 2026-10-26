@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
+import Button from "../components/Button";
+import Field from "../components/Field";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -31,34 +33,33 @@ function Login() {
   }
 
   return (
-    <div>
+    <section className="formulario">
       <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>E-mail</label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
 
-        <div>
-          <label>Senha</label>
-          <input
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
-        </div>
+      <form onSubmit={handleSubmit} noValidate>
+        <Field
+          id="email"
+          label="E-mail"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        {erro && <p>{erro}</p>}
+        <Field
+          id="senha"
+          label="Senha"
+          type="password"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
 
-        <button type="submit" disabled={entrando}>
+        {erro && <p className="aviso aviso--erro">{erro}</p>}
+
+        <Button type="submit" disabled={entrando}>
           {entrando ? "Entrando..." : "Entrar"}
-        </button>
+        </Button>
       </form>
-    </div>
+    </section>
   );
 }
 

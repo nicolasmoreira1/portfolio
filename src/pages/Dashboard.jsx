@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
-import { buscarRepositorios } from "../services/github";
+import { useRepositorios } from "../hooks/useRepositorios";
+import Button from "../components/Button";
+import Card from "../components/Card";
 
 function Dashboard() {
   const [mensagens, setMensagens] = useState([]);
-  const [projetos, setProjetos] = useState([]);
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const { repositorios } = useRepositorios();
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function verificarLoginECarregar() {
+    async function exigirLoginECarregar() {
       const { data: sessao } = await supabase.auth.getSession();
 
       if (!sessao.session) {
@@ -28,15 +30,12 @@ function Dashboard() {
         .from("projetos_destaque")
         .select("*");
 
-      const repos = await buscarRepositorios();
-
       setMensagens(dadosMensagens || []);
       setDestaques(dadosDestaques || []);
-      setProjetos(repos);
       setCarregando(false);
     }
 
-    verificarLoginECarregar();
+    exigirLoginECarregar();
   }, [navigate]);
 
   async function marcarComoRespondida(id) {
@@ -61,14 +60,15 @@ function Dashboard() {
       setDestaques((atual) =>
         atual.filter((d) => d.nome_repositorio !== nomeRepositorio)
       );
-    } else {
-      const { data } = await supabase
-        .from("projetos_destaque")
-        .insert({ nome_repositorio: nomeRepositorio })
-        .select();
-
-      setDestaques((atual) => [...atual, data[0]]);
+      return;
     }
+
+    const { data } = await supabase
+      .from("projetos_destaque")
+      .insert({ nome_repositorio: nomeRepositorio })
+      .select();
+
+    setDestaques((atual) => [...atual, data[0]]);
   }
 
   async function sair() {
@@ -77,45 +77,59 @@ function Dashboard() {
   }
 
   if (carregando) {
-    return <p>Carregando...</p>;
+    return <p className="aviso">Carregando...</p>;
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <button onClick={sair}>Sair</button>
+    <>
+      <header className="painel__topo">
+        <h1>Dashboard</h1>
+        <Button variante="secundario" onClick={sair}>
+          Sair
+        </Button>
+      </header>
 
       <h2>Mensagens recebidas</h2>
-      {mensagens.length === 0 && <p>Nenhuma mensagem recebida ainda.</p>}
+      {mensagens.length === 0 && (
+        <p className="aviso">Nenhuma mensagem recebida ainda.</p>
+      )}
 
-      {mensagens.map((msg) => (
-        <div key={msg.id}>
-          <p><strong>{msg.nome}</strong> ({msg.email})</p>
-          <p>{msg.mensagem}</p>
-          <p>Status: {msg.respondida ? "Respondida" : "Pendente"}</p>
-          {!msg.respondida && (
-            <button onClick={() => marcarComoRespondida(msg.id)}>
-              Marcar como respondida
-            </button>
-          )}
-        </div>
-      ))}
+      <div className="grade">
+        {mensagens.map((msg) => (
+          <Card key={msg.id}>
+            <h2>{msg.nome}</h2>
+            <p className="cartao__descricao">{msg.email}</p>
+            <p>{msg.mensagem}</p>
+            <p className="selo">{msg.respondida ? "respondida" : "pendente"}</p>
+            {!msg.respondida && (
+              <Button
+                variante="secundario"
+                onClick={() => marcarComoRespondida(msg.id)}
+              >
+                Marcar como respondida
+              </Button>
+            )}
+          </Card>
+        ))}
+      </div>
 
-      <h2>Projetos em destaque</h2>
-      {projetos.map((projeto) => (
-        <div key={projeto.id}>
-          <label>
-            <input
-              type="checkbox"
-              checked={estaDestacado(projeto.name)}
-              onChange={() => alternarDestaque(projeto.name)}
-            />
-            {projeto.name}
-          </label>
-        </div>
-      ))}
-    </div>
+      <h2>Projetos em destaque na home</h2>
+      <ul className="lista-destaques">
+        {repositorios.map((projeto) => (
+          <li key={projeto.id}>
+            <label>
+              <input
+                type="checkbox"
+                checked={estaDestacado(projeto.name)}
+                onChange={() => alternarDestaque(projeto.name)}
+              />
+              {projeto.name}
+            </label>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
-export default Dashboard;   
+export default Dashboard;

@@ -1,29 +1,31 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import ProjectDetail from "./pages/ProjectDetail";
-import Contato from "./pages/Contato";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import { useTheme } from "./hooks/useTheme";
+
+// Estas rotas são as únicas que falam com o Supabase. Carregá-las sob demanda
+// tira o SDK do Supabase (~400 kB) do pacote inicial que todo visitante baixa.
+const Contato = lazy(() => import("./pages/Contato"));
+const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 function App() {
-  const { tema, alternarTema } = useTheme();
-
   return (
     <BrowserRouter>
-      <button onClick={alternarTema}>
-        {tema === "claro" ? "🌙 Modo escuro" : "☀️ Modo claro"}
-      </button>
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/projetos/:nome" element={<ProjectDetail />} />
-        <Route path="/contato" element={<Contato />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Layout>
+        <Suspense fallback={<p>Carregando...</p>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/projetos/:nome" element={<ProjectDetail />} />
+            <Route path="/contato" element={<Contato />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </Layout>
     </BrowserRouter>
   );
 }

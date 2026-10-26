@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { supabase } from "../services/supabase";
+import Button from "../components/Button";
+import Field from "../components/Field";
+
+const TAMANHO_MINIMO_MENSAGEM = 20;
+const FORMATO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Contato() {
   const [nome, setNome] = useState("");
@@ -16,13 +21,12 @@ function Contato() {
       novosErros.nome = "O nome é obrigatório.";
     }
 
-    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!emailValido) {
+    if (!FORMATO_EMAIL.test(email)) {
       novosErros.email = "E-mail inválido.";
     }
 
-    if (mensagem.trim().length < 20) {
-      novosErros.mensagem = "A mensagem precisa ter no mínimo 20 caracteres.";
+    if (mensagem.trim().length < TAMANHO_MINIMO_MENSAGEM) {
+      novosErros.mensagem = `A mensagem precisa ter no mínimo ${TAMANHO_MINIMO_MENSAGEM} caracteres.`;
     }
 
     return novosErros;
@@ -48,7 +52,9 @@ function Contato() {
     setEnviando(false);
 
     if (error) {
-      setErros({ geral: "Não foi possível enviar sua mensagem. Tente novamente." });
+      setErros({
+        geral: "Não foi possível enviar sua mensagem. Tente novamente.",
+      });
       return;
     }
 
@@ -59,47 +65,46 @@ function Contato() {
   }
 
   return (
-    <div>
+    <section className="formulario">
       <h1>Contato</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nome</label>
-          <input
-            type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
-          {erros.nome && <p>{erros.nome}</p>}
-        </div>
+      <form onSubmit={handleSubmit} noValidate>
+        <Field
+          id="nome"
+          label="Nome"
+          value={nome}
+          erro={erros.nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
 
-        <div>
-          <label>E-mail</label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {erros.email && <p>{erros.email}</p>}
-        </div>
+        <Field
+          id="email"
+          label="E-mail"
+          value={email}
+          erro={erros.email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <div>
-          <label>Mensagem</label>
-          <textarea
-            value={mensagem}
-            onChange={(e) => setMensagem(e.target.value)}
-          />
-          {erros.mensagem && <p>{erros.mensagem}</p>}
-        </div>
+        <Field
+          as="textarea"
+          id="mensagem"
+          label="Mensagem"
+          rows={6}
+          value={mensagem}
+          erro={erros.mensagem}
+          onChange={(e) => setMensagem(e.target.value)}
+        />
 
-        {erros.geral && <p>{erros.geral}</p>}
-        {sucesso && <p>Mensagem enviada com sucesso!</p>}
+        {erros.geral && <p className="aviso aviso--erro">{erros.geral}</p>}
+        {sucesso && (
+          <p className="aviso aviso--sucesso">Mensagem enviada com sucesso!</p>
+        )}
 
-        <button type="submit" disabled={enviando}>
+        <Button type="submit" disabled={enviando}>
           {enviando ? "Enviando..." : "Enviar"}
-        </button>
+        </Button>
       </form>
-    </div>
+    </section>
   );
 }
 
