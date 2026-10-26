@@ -11,6 +11,7 @@ mensagens recebidas e escolher quais projetos aparecem em destaque.
 | React + Vite | Interface e servidor de desenvolvimento |
 | React Router | Rotas, incluindo link próprio por projeto e página 404 |
 | Supabase | Banco das mensagens e dos destaques + autenticação do dono |
+| Resend | Envio do e-mail de aviso quando chega uma mensagem nova |
 | Vitest + Testing Library | Testes automatizados |
 | ESLint + Husky + lint-staged | Padrão de código verificado antes de cada commit |
 | Vercel | Publicação automática a cada push na `main` |
@@ -64,6 +65,23 @@ npm test     # roda os testes
 npm run lint # verifica o padrão de código
 npm run build # gera a versão de produção em dist/
 ```
+
+## Fluxo do formulário de contato
+
+Quando o visitante envia o formulário, acontecem duas coisas:
+
+1. O front-end grava a mensagem na tabela `mensagens` do Supabase — é ela que
+   alimenta o dashboard.
+2. Um **Database Webhook** do Supabase dispara no `INSERT` dessa tabela e chama
+   o **Resend**, que manda o e-mail de aviso para o dono do site.
+
+O passo 2 é configurado no painel do Supabase, não neste repositório. Quem
+clonar o projeto terá o formulário salvando no banco, mas **nenhum e-mail será
+enviado** até configurar o webhook.
+
+A chave do Resend fica guardada no Supabase, nunca no `.env` deste projeto:
+tudo que começa com `VITE_` é embutido no JavaScript e fica visível para
+qualquer visitante.
 
 ## Variáveis de ambiente
 
