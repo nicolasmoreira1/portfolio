@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
+import { buscarRepositorios } from "../services/github";
 
 function Dashboard() {
   const [mensagens, setMensagens] = useState([]);
+  const [projetos, setProjetos] = useState([]);
+  const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const navigate = useNavigate();
 
@@ -16,12 +19,20 @@ function Dashboard() {
         return;
       }
 
-      const { data } = await supabase
+      const { data: dadosMensagens } = await supabase
         .from("mensagens")
         .select("*")
         .order("created_at", { ascending: false });
 
-      setMensagens(data || []);
+      const { data: dadosDestaques } = await supabase
+        .from("projetos_destaque")
+        .select("*");
+
+      const repos = await buscarRepositorios();
+
+      setMensagens(dadosMensagens || []);
+      setDestaques(dadosDestaques || []);
+      setProjetos(repos);
       setCarregando(false);
     }
 
@@ -34,6 +45,30 @@ function Dashboard() {
     setMensagens((atual) =>
       atual.map((m) => (m.id === id ? { ...m, respondida: true } : m))
     );
+  }
+
+  function estaDestacado(nomeRepositorio) {
+    return destaques.some((d) => d.nome_repositorio === nomeRepositorio);
+  }
+
+  async function alternarDestaque(nomeRepositorio) {
+    if (estaDestacado(nomeRepositorio)) {
+      await supabase
+        .from("projetos_destaque")
+        .delete()
+        .eq("nome_repositorio", nomeRepositorio);
+
+      setDestaques((atual) =>
+        atual.filter((d) => d.nome_repositorio !== nomeRepositorio)
+      );
+    } else {
+      const { data } = await supabase
+        .from("projetos_destaque")
+        .insert({ nome_repositorio: nomeRepositorio })
+        .select();
+
+      setDestaques((atual) => [...atual, data[0]]);
+    }
   }
 
   async function sair() {
@@ -65,8 +100,22 @@ function Dashboard() {
           )}
         </div>
       ))}
+
+      <h2>Projetos em destaque</h2>
+      {projetos.map((projeto) => (
+        <div key={projeto.id}>
+          <label>
+            <input
+              type="checkbox"
+              checked={estaDestacado(projeto.name)}
+              onChange={() => alternarDestaque(projeto.name)}
+            />
+            {projeto.name}
+          </label>
+        </div>
+      ))}
     </div>
   );
 }
 
-export default Dashboard;
+export default Dashboard;   
