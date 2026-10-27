@@ -1,66 +1,62 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { buscarRepositorios } from "../services/github";
-import { supabase } from "../services/supabase";
+import { useRepositorios } from "../hooks/useRepositorios";
+import ProjectCard from "../components/ProjectCard";
+import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
 
 function Home() {
-  const [projetos, setProjetos] = useState([]);
+  const { repositorios, carregando, erro } = useRepositorios();
   const [destaques, setDestaques] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    async function carregar() {
-      try {
-        const repos = await buscarRepositorios();
-        const { data: dadosDestaques } = await supabase
-          .from("projetos_destaque")
-          .select("*");
-
-        setProjetos(repos);
-        setDestaques(dadosDestaques || []);
-      } catch (erroCapturado) {
-        setErro(erroCapturado.message);
-      } finally {
-        setCarregando(false);
-      }
-    }
-
-    carregar();
+    // Import dinâmico: a lista de destaques é um enfeite, não pode atrasar a
+    // primeira pintura carregando o SDK do Supabase junto com a página.
+    import("../services/supabase").then(({ supabase }) =>
+      supabase
+        .from("projetos_destaque")
+        .select("*")
+        .then(({ data }) => setDestaques(data || []))
+    );
   }, []);
 
   function estaDestacado(nomeRepositorio) {
     return destaques.some((d) => d.nome_repositorio === nomeRepositorio);
   }
 
-  if (carregando) {
-    return <p>Carregando projetos...</p>;
-  }
-
-  if (erro) {
-    return <p>Não foi possível carregar os projetos. Tente novamente mais tarde.</p>;
-  }
-
-  if (projetos.length === 0) {
-    return <p>Nenhum projeto encontrado.</p>;
-  }
+  // Destaques primeiro, mantendo a ordem original (mais recentes) dentro de
+  // cada grupo.
+  const projetosOrdenados = [...repositorios].sort(
+    (a, b) => estaDestacado(b.name) - estaDestacado(a.name)
+  );
 
   return (
-    <div>
-      <h1>Meu Portfólio</h1>
-      <div>
-        {projetos.map((projeto) => (
-          <div key={projeto.id}>
-            <h3>
-              {projeto.name} {estaDestacado(projeto.name) && "⭐ Destaque"}
-            </h3>
-            <p>{projeto.description}</p>
-            <p>Linguagem: {projeto.language}</p>
-            <Link to={`/projetos/${projeto.name}`}>Ver detalhes</Link>
-          </div>
-        ))}
+    <>
+      <section className="abertura">
+        <h1>Nicolas Moreira</h1>
+        <p>
+          Desenvolvedor front-end. Abaixo, os projetos que estão no meu GitHub,
+          carregados automaticamente.
+        </p>
+      </section>
+
+      {erro && <p className="aviso aviso--erro">{erro}</p>}
+
+      {!erro && !carregando && repositorios.length === 0 && (
+        <p className="aviso">Nenhum projeto encontrado.</p>
+      )}
+
+      <div className="grade">
+        {carregando && <ProjectCardSkeleton />}
+
+        {!carregando &&
+          projetosOrdenados.map((projeto) => (
+            <ProjectCard
+              key={projeto.id}
+              projeto={projeto}
+              destacado={estaDestacado(projeto.name)}
+            />
+          ))}
       </div>
-    </div>
+    </>
   );
 }
 
